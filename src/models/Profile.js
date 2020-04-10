@@ -29,6 +29,20 @@ module.exports = {
       );
     });
   },
+  checkBalance: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT balance FROM user WHERE id = '${id}'`,
+        (error, result) => {
+          if (error) {
+            reject(new Error(error));
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  },
   detailUser: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(

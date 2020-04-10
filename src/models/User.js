@@ -41,4 +41,47 @@ module.exports = {
       );
     });
   },
+  checkRole: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT role FROM user WHERE id = '${id}'`,
+        (error, result) => {
+          if (error) {
+            reject(new Error(error));
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  },
+  getAll: (offset, limit, sort, sortBy, search) => {
+    return new Promise((resolve, reject) => {
+      const query = `SELECT * FROM user WHERE role = "nasabah" AND (phone LIKE '%${search}%' or name LIKE '%${search}%') 
+      ORDER BY ${sortBy} ${sort} LIMIT ${offset}, ${limit}`;
+      connection.query(query, (error, result) => {
+        if (error) {
+          reject(new Error(error));
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  },
+  getAllNasabahById: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM user WHERE id = ${id}`,
+        (error, result) => {
+          if (error) {
+            console.log(error);
+
+            reject(new Error(error));
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  },
 };

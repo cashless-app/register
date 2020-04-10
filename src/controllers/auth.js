@@ -1,12 +1,115 @@
 require("dotenv").config();
-
+const connection = require("../configs/db");
 const User = require("../models/User");
 const Profile = require("../models/Profile");
 const misc = require("../helpers/misc");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-
+const QRCode = require("qrcode");
+const redis = require("redis");
+const redisClient = redis.createClient();
 module.exports = {
+  getAllNasabah: async (request, response) => {
+    const page = parseInt(request.query.page) || 1;
+    const search = request.query.search || "";
+    const limit = request.query.limit || 10;
+    const sort = request.query.sort || "DESC";
+    const sortBy = request.query.sortBy || " 	date_updated";
+    const offset = (page - 1) * limit;
+    let totalNasabah = 0;
+    let totalPage = 0;
+    let prevPage = 0;
+    let nextPage = 0;
+    connection.query(
+      `SELECT COUNT(*) as data FROM user WHERE (phone LIKE '%${search}' or name LIKE '%${search}' )`,
+      (error, response) => {
+        if (error) {
+          misc.response(response, 400, true, "Error", error);
+        }
+        totalNasabah = response[0].data;
+        totalPage =
+          totalNasabah % limit === 0
+            ? totalNasabah / limit
+            : Math.floor(totalNasabah / limit + 1);
+        prevPage = page === 1 ? 1 : page - 1;
+        nextPage = page === totalPage ? totalPage : page + 1;
+      }
+    );
+    User.getAll(offset, limit, sort, sortBy, search)
+      .then((result) => {
+        const data = {
+          status: 200,
+          error: false,
+          source: "api",
+          data: result,
+          total_data: Math.ceil(totalNasabah),
+          per_page: limit,
+          current_page: page,
+          total_page: totalPage,
+          nextLink: `http://localhost:2010${request.originalUrl.replace(
+            "page=" + page,
+            "page=" + nextPage
+          )}`,
+          prevLink: `http://localhost:2010${request.originalUrl.replace(
+            "page=" + page,
+            "page=" + prevPage
+          )}`,
+          message: "Success getting all data",
+        };
+        redisClient.setex(request.originalUrl, 3600, JSON.stringify(data));
+        response.status(200).json({
+          status: 200,
+          error: false,
+          source: "api",
+          data: result,
+          total_data: Math.ceil(totalNasabah),
+          per_page: limit,
+          current_page: page,
+          total_page: totalPage,
+          nextLink: `http://localhost:2010${request.originalUrl.replace(
+            "page=" + page,
+            "page=" + nextPage
+          )}`,
+          prevLink: `http://localhost:2010${request.originalUrl.replace(
+            "page=" + page,
+            "page=" + prevPage
+          )}`,
+          message: "Success getting all data",
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        response.status(400).json({
+          status: 400,
+          error: true,
+          message: "Data not Found",
+        });
+      });
+  },
+  getAllNasabahByid: (request, response) => {
+    const id = request.params.id;
+    User.getAllNasabahById(id)
+      .then((result) => {
+        console.log(result);
+
+        response.status(200).json({
+          status: 200,
+          error: false,
+          dataShowed: result.length,
+          data: result,
+          response: "Data loaded",
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        response.status(400).json({
+          status: 400,
+          error: true,
+          message: "Failed to get Nasabah with this Id",
+          detail: err.message,
+        });
+      });
+  },
   login: async (request, response) => {
     console.log(request.body);
 
