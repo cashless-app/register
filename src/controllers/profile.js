@@ -28,7 +28,7 @@ module.exports = {
   },
   createProfile: async (request, response) => {
     try {
-      const id = request.body.id;
+      const id = request.params.id;
       const checkRole = await Profile.checkRole(id);
       if (checkRole.length === 0 || checkRole === null) {
         return misc.response(response, 400, false, "User not found");
@@ -64,7 +64,10 @@ module.exports = {
       misc.response(response, 500, true, "Server error");
     }
   },
+
   updateProfile: async (request, response) => {
+    console.log(request.body);
+
     try {
       const id = request.params.id;
       const checkRole = await Profile.checkRole(id);
@@ -92,7 +95,7 @@ module.exports = {
       }
       await Profile.updateName(id);
 
-      await Profile.updateProfile(data);
+      await Profile.updateProfile(data, id);
       redisClient.flushdb();
       misc.response(response, 200, false, "Success edit profile");
     } catch (error) {

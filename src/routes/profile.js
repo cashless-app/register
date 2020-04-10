@@ -7,7 +7,7 @@ const Route = express.Router();
 
 const storage = multer.diskStorage({
   destination: (request, file, callback) => {
-    callback(null, "./public/images/profile");
+    callback(null, "../../public/");
   },
   filename: (request, file, callback) => {
     callback(null, file.originalname);

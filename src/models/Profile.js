@@ -43,10 +43,10 @@ module.exports = {
     });
   },
 
-  updateProfile: (data) => {
-    let query = `UPDATE  user  SET name='${name}'  email = '${email}', phone = '${phone}' WHERE id = ?`;
+  updateProfile: (data, id) => {
+    let query = `UPDATE  user  SET ? WHERE id = ?`;
     return new Promise((resolve, reject) => {
-      connection.query(query, data, (error, result) => {
+      connection.query(query, [data, id], (error, result) => {
         if (error) {
           reject(new Error(error));
         } else {

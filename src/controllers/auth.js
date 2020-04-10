@@ -5,11 +5,12 @@ const Profile = require("../models/Profile");
 const misc = require("../helpers/misc");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+
 module.exports = {
   login: async (request, response) => {
     console.log(request.body);
 
-    const phone = request.body;
+    const phone = request.body.phone;
     try {
       const user = await User.login(phone);
       if (user.length === 0) {
@@ -33,8 +34,6 @@ module.exports = {
         name: user[0].name,
         email: user[0].email,
       };
-      console.log(data);
-
       misc.response(response, 200, false, "Successfull login", data);
     } catch (error) {
       console.error(error.message);
@@ -44,49 +43,47 @@ module.exports = {
   register: async (request, response) => {
     const { name, email, role, password, phone } = request.body;
 
-    //    try {
-    const user = await User.checkUser(email);
+    try {
+      const user = await User.checkUser(email);
 
-    /*    if (user.length === 0) {
-    
-      console.log(data);
+      if (user.length === 0) {
+        console.log(data);
 
-      */
-    const salt = await bcrypt.genSalt(10);
+        const salt = await bcrypt.genSalt(10);
 
-    const passwordHash = await bcrypt.hash(password, salt);
+        const passwordHash = await bcrypt.hash(password, salt);
 
-    const data = {
-      name,
-      email,
-      password: passwordHash,
-      role,
-      phone,
-    };
-    const registered = await User.register(data);
+        const data = {
+          name,
+          email,
+          password: passwordHash,
+          role,
+          phone,
+        };
+        const registered = await User.register(data);
 
-    const dataProfile = {
-      id: registered.id,
-    };
-    //await Profile.storeProfile(role, dataProfile);
+        const dataProfile = {
+          id: registered.id,
+        };
+        // await Profile.storeProfile(role, dataProfile);
 
-    const payload = {
-      user: {
-        id: registered.id,
-      },
-    };
+        const payload = {
+          user: {
+            id: registered.id,
+          },
+        };
 
-    const token = await jwt.sign(payload, process.env.JWT_KEY, {
-      expiresIn: 360000,
-    });
+        const token = await jwt.sign(payload, process.env.JWT_KEY, {
+          expiresIn: 360000,
+        });
 
-    misc.response(response, 200, false, "Successfull register");
-    /*   } else {
-      return misc.response(response, 500, true, "User already exists");
+        misc.response(response, 200, false, "Successfull register");
+      } else {
+        return misc.response(response, 500, true, "User already exists");
+      }
+    } catch (error) {
+      console.error(error.message);
+      misc.response(response, 500, true, "Server error");
     }
-    // } c */ //atch (error) {
-    //   console.error(error.message);
-    //   misc.response(response, 500, true, "Server error");
-    //  }
   },
 };
