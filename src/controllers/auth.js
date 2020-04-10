@@ -41,29 +41,21 @@ module.exports = {
     }
   },
   register: async (request, response) => {
-    const { name, email, role, password, phone } = request.body;
+    const { name, email, password, role, phone } = request.body;
 
     try {
       const user = await User.checkUser(email);
 
       if (user.length === 0) {
-        console.log(data);
-
         const salt = await bcrypt.genSalt(10);
 
         const passwordHash = await bcrypt.hash(password, salt);
 
-        const data = {
-          name,
-          email,
-          password: passwordHash,
-          role,
-          phone,
-        };
-        const registered = await User.register(data);
+        const data = { name, email, password: passwordHash, role, phone };
 
+        const registered = await User.register(data);
         const dataProfile = {
-          id: registered.id,
+          user_id: registered.insertId,
         };
         // await Profile.storeProfile(role, dataProfile);
 
@@ -83,7 +75,7 @@ module.exports = {
       }
     } catch (error) {
       console.error(error.message);
-      misc.response(response, 500, true, "Server error");
+      misc.response(response, 400, true, "Server error");
     }
   },
 };

@@ -31,7 +31,7 @@ module.exports = {
     });
   },
 
-  storeProfile: (role, data) => {
+  /* storeProfile: (role, data) => {
     return new Promise((resolve, reject) => {
       connection.query(`INSERT INTO ${role} SET ?`, data, (error, result) => {
         if (error) {
@@ -41,7 +41,7 @@ module.exports = {
         }
       });
     });
-  },
+  }, */
 
   updateProfile: (data, id) => {
     let query = `UPDATE  user  SET ? WHERE id = ?`;
