@@ -8,8 +8,8 @@ module.exports = {
   getProfile: async (request, response) => {
     const id = request.params.id;
     try {
-      const checkRole = await Profile.checkRole(id);
-      if (checkRole.length === 0) {
+      const checkPhone = await Profile.checkPhone(id);
+      if (checkPhone.length === 0) {
         throw new Error("User not found");
       }
       const profile = await Profile.detailUser(id);
@@ -26,19 +26,18 @@ module.exports = {
       misc.response(response, 500, true, error.message);
     }
   },
-  createProfile: async (request, response) => {
+  updateProfile: async (request, response) => {
     try {
       const id = request.params.id;
-      const checkRole = await Profile.checkRole(id);
-      if (checkRole.length === 0 || checkRole === null) {
+      const checkPhone = await Profile.checkPhone(id);
+      if (checkPhone.length === 0 || checkPhone === null) {
         return misc.response(response, 400, false, "User not found");
       }
       let requireCheck = [];
       let data = {};
-      const { name, email, role, phone } = request.body;
+      const { name, email, phone } = request.body;
       !name ? requireCheck.push("name is required") : "";
       !email ? requireCheck.push("email is required") : "";
-      !role ? requireCheck.push("role is required") : "";
       !phone ? requireCheck.push("phone is required") : "";
       if (requireCheck.length) {
         return misc.response(response, 400, false, "Not Valid", {
@@ -46,63 +45,20 @@ module.exports = {
         });
       }
       data = {
-        name,
-        email,
-        role,
-        phone,
+        name: name,
+        email: email,
+        phone: phone,
       };
-      const created = await Profile.storeProfile(data);
-      const payload = {
-        user: {
-          id: created.id,
-        },
-      };
-      redisClient.flushdb();
-      misc.response(response, 200, false, "Success create profile", payload);
-    } catch (error) {
-      console.error(error.message);
-      misc.response(response, 500, true, "Server error");
-    }
-  },
-
-  updateProfile: async (request, response) => {
-    console.log(request.body);
-
-    try {
-      const id = request.params.id;
-      const checkRole = await Profile.checkRole(id);
-      if (checkRole.length === 0) {
-        return misc.response(response, 400, false, "User not found");
-      }
-      let requireCheck = [];
-      let data = {};
-
-      const { name, email, phone } = request.body;
-
-      !name ? requireCheck.push("name is required") : "";
-      !email ? requireCheck.push("email is required") : "";
-      !phone ? requireCheck.push("phone is required") : "";
-
-      if (requireCheck.length) {
-        return misc.response(response, 400, false, "Not Valid", {
-          errors: [{ msg: requireCheck }],
-        });
-      }
-      data = [name, email, phone];
-      const profile = await Profile.detailUser(id);
-      if (profile.length === 0) {
-        return misc.response(response, 400, false, "Profile not found");
-      }
-      await Profile.updateName(id);
-
       await Profile.updateProfile(data, id);
+      await Profile.updateName(name, id);
       redisClient.flushdb();
-      misc.response(response, 200, false, "Success edit profile");
+      misc.response(response, 200, false, "Success create profile", data);
     } catch (error) {
       console.error(error.message);
       misc.response(response, 500, true, "Server error");
     }
   },
+
   deleteProfile: async (request, response) => {
     const id = request.params.id;
     try {
@@ -163,7 +119,7 @@ module.exports = {
     const photo = request.file.filename;
     try {
       if (error === false) {
-        await Profile.uploadUser(photo);
+        await Profile.uploadUser(photo, id);
         redisClient.flushdb();
         misc.response(response, 200, false, "Success upload profile buyer");
       }

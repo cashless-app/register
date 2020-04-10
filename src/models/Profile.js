@@ -15,7 +15,20 @@ module.exports = {
       );
     });
   },
-
+  checkPhone: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT phone FROM user WHERE id = '${id}'`,
+        (error, result) => {
+          if (error) {
+            reject(new Error(error));
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  },
   detailUser: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(
@@ -31,32 +44,23 @@ module.exports = {
     });
   },
 
-  /* storeProfile: (role, data) => {
-    return new Promise((resolve, reject) => {
-      connection.query(`INSERT INTO ${role} SET ?`, data, (error, result) => {
-        if (error) {
-          reject(new Error(error));
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }, */
-
   updateProfile: (data, id) => {
-    let query = `UPDATE  user  SET ? WHERE id = ?`;
     return new Promise((resolve, reject) => {
-      connection.query(query, [data, id], (error, result) => {
-        if (error) {
-          reject(new Error(error));
-        } else {
-          resolve(result);
+      connection.query(
+        `UPDATE  user  SET ? WHERE id = ?`,
+        [data, id],
+        (error, result) => {
+          if (error) {
+            reject(new Error(error));
+          } else {
+            resolve(result);
+          }
         }
-      });
+      );
     });
   },
 
-  updateName: (id, name) => {
+  updateName: (name, id) => {
     let query = `UPDATE  user  SET  name = '${name}' WHERE id = ${id}`;
     return new Promise((resolve, reject) => {
       connection.query(query, (error, result) => {

@@ -7,18 +7,16 @@ const Route = express.Router();
 
 const storage = multer.diskStorage({
   destination: (request, file, callback) => {
-    callback(null, "../../public/");
+    callback(null, "./public");
   },
   filename: (request, file, callback) => {
     callback(null, file.originalname);
   },
 });
-
 const uploadUser = multer({
   storage,
 });
 
-Route.post("/:id", Profile.createProfile);
 Route.patch("/:id", Profile.updateProfile);
 Route.delete("/:id", Profile.deleteProfile);
 Route.patch("/upload-user/:id", uploadUser.single("photo"), Profile.uploadUser);
