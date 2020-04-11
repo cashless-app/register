@@ -173,7 +173,7 @@ module.exports = {
           expiresIn: 360000,
         });
 
-        misc.response(response, 200, false, "Successfull register");
+        misc.response(response, 200, false, "Successfull register", token);
       } else {
         return misc.response(
           response,
