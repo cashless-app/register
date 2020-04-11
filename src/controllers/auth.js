@@ -6,6 +6,7 @@ const misc = require("../helpers/misc");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const QRCode = require("qrcode");
+const emailRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
 const redis = require("redis");
 const redisClient = redis.createClient();
 module.exports = {
@@ -145,11 +146,11 @@ module.exports = {
   },
   register: async (request, response) => {
     const { name, email, password, role, phone } = request.body;
-
+    const checkEmail = emailRegex.test(email);
     try {
       const user = await User.checkUser(email);
       const user1 = await Profile.checkPhone(phone);
-      if (user.length === 0 && user1.length === 0) {
+      if (user.length === 0 && user1.length === 0 && checkEmail === true) {
         const salt = await bcrypt.genSalt(10);
 
         const passwordHash = await bcrypt.hash(password, salt);
@@ -174,7 +175,12 @@ module.exports = {
 
         misc.response(response, 200, false, "Successfull register");
       } else {
-        return misc.response(response, 500, true, "User already exists");
+        return misc.response(
+          response,
+          500,
+          true,
+          "User already exists OR wrong email password"
+        );
       }
     } catch (error) {
       console.error(error.message);
