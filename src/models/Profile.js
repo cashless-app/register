@@ -15,10 +15,10 @@ module.exports = {
       );
     });
   },
-  checkPhone: (id) => {
+  checkPhone: (phone) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT phone FROM user WHERE id = '${id}'`,
+        `SELECT phone FROM user WHERE phone = '${phone}'`,
         (error, result) => {
           if (error) {
             reject(new Error(error));

@@ -148,8 +148,8 @@ module.exports = {
 
     try {
       const user = await User.checkUser(email);
-
-      if (user.length === 0) {
+      const user1 = await Profile.checkPhone(phone);
+      if (user.length === 0 && user1.length === 0) {
         const salt = await bcrypt.genSalt(10);
 
         const passwordHash = await bcrypt.hash(password, salt);

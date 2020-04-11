@@ -74,8 +74,6 @@ module.exports = {
         `SELECT * FROM user WHERE id = ${id}`,
         (error, result) => {
           if (error) {
-            console.log(error);
-
             reject(new Error(error));
           } else {
             resolve(result);
