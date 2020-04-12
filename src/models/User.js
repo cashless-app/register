@@ -16,6 +16,21 @@ module.exports = {
       );
     });
   },
+  updateQRCode: (data, id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `UPDATE user SET data = ? WHERE id = ?`,
+        [data, id],
+        (error, result) => {
+          if (!error) {
+            resolve(result);
+          } else {
+            reject(new Error(error));
+          }
+        }
+      );
+    });
+  },
   register: (data) => {
     return new Promise((resolve, reject) => {
       connection.query("INSERT INTO user SET ?", data, (error, result) => {
@@ -55,6 +70,7 @@ module.exports = {
       );
     });
   },
+
   getAll: (offset, limit, sort, sortBy, search) => {
     return new Promise((resolve, reject) => {
       const query = `SELECT * FROM user WHERE role = "nasabah" AND (phone LIKE '%${search}%' or name LIKE '%${search}%') 

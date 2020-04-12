@@ -91,8 +91,6 @@ module.exports = {
     const id = request.params.id;
     User.getAllNasabahById(id)
       .then((result) => {
-        console.log(result);
-
         response.status(200).json({
           status: 200,
           error: false,
@@ -160,6 +158,7 @@ module.exports = {
         const registered = await User.register(data);
         const dataProfile = {
           user_id: registered.insertId,
+          data,
         };
         // await Profile.storeProfile(role, dataProfile);
 
@@ -173,7 +172,10 @@ module.exports = {
           expiresIn: 360000,
         });
 
-        misc.response(response, 200, false, "Successfull register", token);
+        misc.response(response, 200, false, "Successfull register", [
+          token,
+          dataProfile,
+        ]);
       } else {
         return misc.response(
           response,

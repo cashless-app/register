@@ -64,6 +64,7 @@ module.exports = {
         `UPDATE  user  SET ? WHERE id = ?`,
         [data, id],
         (error, result) => {
+          console.log("data", result);
           if (error) {
             reject(new Error(error));
           } else {
