@@ -16,11 +16,11 @@ module.exports = {
       );
     });
   },
-  updateQRCode: (data, id) => {
+  updateQRCode: (qrcode, id) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `UPDATE user SET data = ? WHERE id = ?`,
-        [data, id],
+        `UPDATE user SET qrcode = ? WHERE id = ?`,
+        [qrcode, id],
         (error, result) => {
           if (!error) {
             resolve(result);

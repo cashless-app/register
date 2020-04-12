@@ -127,6 +127,7 @@ module.exports = {
       const token = await jwt.sign(payload, process.env.JWT_KEY, {
         expiresIn: 360000,
       });
+
       const data = {
         token,
         id: user[0].id,
@@ -151,20 +152,29 @@ module.exports = {
 
         const passwordHash = await bcrypt.hash(password, salt);
 
-        const data = { name, email, password: passwordHash, role, phone };
-
+        const data = {
+          name,
+          email,
+          password: passwordHash,
+          role,
+          phone,
+        };
         const registered = await User.register(data);
+
         const dataProfile = {
           user_id: registered.insertId,
           data,
         };
-        // await Profile.storeProfile(role, dataProfile);
-
         const payload = {
           user: {
             id: registered.id,
           },
         };
+        const userId = await registered.insertId;
+        const idUser = await String(userId);
+        const qrcode = await QRCode.toDataURL(idUser);
+
+        await User.updateQRCode(qrcode, idUser);
 
         const token = await jwt.sign(payload, process.env.JWT_KEY, {
           expiresIn: 360000,
