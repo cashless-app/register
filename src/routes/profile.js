@@ -17,8 +17,10 @@ const uploadUser = multer({
   storage,
 });
 
-Route.patch("/:id", Profile.updateProfile);
-Route.patch("/:id", Profile.updateName);
+Route.patch("/name/:id", Profile.updateName);
+Route.patch("/email/:id", Profile.updateEmail);
+Route.patch("/phone/:id", Profile.updatePhone);
+
 Route.delete("/:id", Profile.deleteProfile);
 Route.patch("/upload-user/:id", uploadUser.single("photo"), Profile.uploadUser);
 

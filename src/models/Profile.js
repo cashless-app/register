@@ -58,13 +58,27 @@ module.exports = {
     });
   },
 
-  updateProfile: (data, id) => {
+  updateEmail: (email, id) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `UPDATE  user  SET ? WHERE id = ?`,
-        [data, id],
+        `UPDATE  user  SET  email = '${email}' WHERE id = ${id}`,
+        [email, id],
         (error, result) => {
-          console.log("data", result);
+          if (error) {
+            reject(new Error(error));
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  },
+  updatePhone: (phone, id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `UPDATE  user  SET  phone = '${phone}' WHERE id = ${id}`,
+        [phone, id],
+        (error, result) => {
           if (error) {
             reject(new Error(error));
           } else {

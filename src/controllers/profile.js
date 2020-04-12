@@ -26,41 +26,11 @@ module.exports = {
       misc.response(response, 500, true, error.message);
     }
   },
-  updateProfile: async (request, response) => {
-    try {
-      const id = request.params.id;
-
-      let requireCheck = [];
-      let data = {};
-      const { name, email, phone } = request.body;
-      !name ? requireCheck.push("name is required") : "";
-      !email ? requireCheck.push("email is required") : "";
-      !phone ? requireCheck.push("phone is required") : "";
-      if (requireCheck.length) {
-        return misc.response(response, 400, false, "Not Valid", {
-          errors: [{ msg: requireCheck }],
-        });
-      }
-      data = {
-        name: name,
-        email: email,
-        phone: phone,
-      };
-      await Profile.updateProfile(data, id);
-      await Profile.updateName(name, id);
-      redisClient.flushdb();
-      misc.response(response, 200, false, "Success create profile", data);
-    } catch (error) {
-      console.error(error.message);
-      misc.response(response, 500, true, "Server error");
-    }
-  },
   updateName: async (request, response) => {
     try {
       const id = request.params.id;
 
       let requireCheck = [];
-      let data = {};
       const { name } = request.body;
       !name ? requireCheck.push("name is required") : "";
       if (requireCheck.length) {
@@ -68,18 +38,55 @@ module.exports = {
           errors: [{ msg: requireCheck }],
         });
       }
-      data = {
-        name: name,
-      };
+
       await Profile.updateName(name, id);
       redisClient.flushdb();
-      misc.response(response, 200, false, "Success create profile", data);
+      misc.response(response, 200, false, "Success Update Name", name);
     } catch (error) {
       console.error(error.message);
       misc.response(response, 500, true, "Server error");
     }
   },
+  updateEmail: async (request, response) => {
+    try {
+      const id = request.params.id;
+      let requireCheck = [];
+      const { email } = request.body;
+      !email ? requireCheck.push("email is required") : "";
+      if (requireCheck.length) {
+        return misc.response(response, 400, false, "Not Valid", {
+          errors: [{ msg: requireCheck }],
+        });
+      }
 
+      await Profile.updateEmail(email, id);
+      redisClient.flushdb();
+      misc.response(response, 200, false, "Success Update Email", email);
+    } catch (error) {
+      console.error(error.message);
+      misc.response(response, 500, true, "Server error");
+    }
+  },
+  updatePhone: async (request, response) => {
+    try {
+      const id = request.params.id;
+      let requireCheck = [];
+      const { phone } = request.body;
+      !phone ? requireCheck.push("Phone is required") : "";
+      if (requireCheck.length) {
+        return misc.response(response, 400, false, "Not Valid", {
+          errors: [{ msg: requireCheck }],
+        });
+      }
+
+      await Profile.updatePhone(phone, id);
+      redisClient.flushdb();
+      misc.response(response, 200, false, "Success Update Email", phone);
+    } catch (error) {
+      console.error(error.message);
+      misc.response(response, 500, true, "Server error");
+    }
+  },
   deleteProfile: async (request, response) => {
     const id = request.params.id;
     try {
@@ -142,7 +149,7 @@ module.exports = {
       if (error === false) {
         await Profile.uploadUser(photo, id);
         redisClient.flushdb();
-        misc.response(response, 200, false, "Success upload profile buyer");
+        misc.response(response, 200, false, "Success upload profile Nasabah");
       }
     } catch (error) {
       console.error(error);

@@ -110,8 +110,6 @@ module.exports = {
       });
   },
   login: async (request, response) => {
-    console.log(request.body);
-
     const phone = request.body.phone;
     try {
       const user = await User.login(phone);
