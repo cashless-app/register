@@ -29,10 +29,7 @@ module.exports = {
   updateProfile: async (request, response) => {
     try {
       const id = request.params.id;
-      const checkPhone = await Profile.checkPhone(id);
-      if (checkPhone.length === 0 || checkPhone === null) {
-        return misc.response(response, 400, false, "User not found");
-      }
+
       let requireCheck = [];
       let data = {};
       const { name, email, phone } = request.body;
@@ -50,6 +47,30 @@ module.exports = {
         phone: phone,
       };
       await Profile.updateProfile(data, id);
+      await Profile.updateName(name, id);
+      redisClient.flushdb();
+      misc.response(response, 200, false, "Success create profile", data);
+    } catch (error) {
+      console.error(error.message);
+      misc.response(response, 500, true, "Server error");
+    }
+  },
+  updateName: async (request, response) => {
+    try {
+      const id = request.params.id;
+
+      let requireCheck = [];
+      let data = {};
+      const { name } = request.body;
+      !name ? requireCheck.push("name is required") : "";
+      if (requireCheck.length) {
+        return misc.response(response, 400, false, "Not Valid", {
+          errors: [{ msg: requireCheck }],
+        });
+      }
+      data = {
+        name: name,
+      };
       await Profile.updateName(name, id);
       redisClient.flushdb();
       misc.response(response, 200, false, "Success create profile", data);

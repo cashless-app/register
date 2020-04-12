@@ -40,7 +40,6 @@ module.exports = {
 
       result =
         (data[0].amount ? parseInt(data[0].amount) : 0) + parseInt(amount);
-      console.log(result);
 
       code = `TOP${moment(new Date()).format("DDMMYY")}${Math.floor(
         Math.random() * (999 - 100 + 1) + 100
@@ -55,8 +54,12 @@ module.exports = {
         amount: amount,
         recipient: data[0].phone,
       };
-      await Transaction.insert_history(data2);
-      await Transaction.top_up_update(data1, id);
+      if (data[0].role == "nasabah") {
+        await Transaction.top_up_update(data1, id);
+        await Transaction.insert_history(data2);
+      } else {
+        misc.response(response, 500, false, "your not nasabah");
+      }
 
       redisClient.flushdb();
       misc.response(response, 200, false, "Success topUp");
@@ -68,47 +71,54 @@ module.exports = {
   transfer: async (request, response) => {
     const id1 = request.params.id1;
     const id2 = request.params.id2;
+    const amount = request.body.amount;
     const date = new Date();
     try {
-      if (current_amount) {
-        result = parseInt(current_amount) + parseInt(request.body.amount);
+      const pengirim = await User.getAllNasabahById(id1);
+      const penerima = await User.getAllNasabahById(id2);
+
+      result =
+        (penerima[0].amount ? parseInt(penerima[0].amount) : 0) +
+        parseInt(amount);
+      result1 =
+        (pengirim[0].amount ? parseInt(pengirim[0].amount) : 0) -
+        parseInt(amount);
+      code = `TRI${moment(new Date()).format("DDMMYY")}${Math.floor(
+        Math.random() * (999 - 100 + 1) + 100
+      )}`;
+      code1 = `TRO${moment(new Date()).format("DDMMYY")}${Math.floor(
+        Math.random() * (999 - 100 + 1) + 100
+      )}`;
+      const penerima3 = {
+        amount: result,
+      };
+      const data2 = {
+        transaction: "2",
+        code: code,
+        date,
+        amount: amount,
+        recipient: penerima[0].phone,
+      };
+      const data3 = {
+        transaction: "3",
+        code: code1,
+        date,
+        amount: amount,
+        recipient: pengirim[0].phone,
+      };
+      const pengirim4 = {
+        amount: result1,
+      };
+      if (parseInt(pengirim[0].amount) < parseInt(amount)) {
+        misc.response(response, 500, false, "your amount is not enough");
       } else {
-        result = parseInt(request.body.amount);
+        await Transaction.insert_history(data2);
+        await Transaction.insert_history(data3);
+
+        await Transaction.top_up_update(penerima3, id2);
+        await Transaction.top_up_update(pengirim4, id1);
       }
-      code = `TRI${moment(new Date()).format("DDMMYY")}${Math.floor(
-        Math.random() * (999 - 100 + 1) + 100
-      )}`;
-      recipient = request.body.recipient;
-      convert_result = config.formatRupiah(result.toString(), "+", "Rp");
-      convert_result_without_symbol = config.formatRupiah(
-        result.toString(),
-        "",
-        "Rp"
-      );
-      data = { amount: convert_result_without_symbol, code, recipient };
-      transfer_p2p_in(data);
-      code = `TRI${moment(new Date()).format("DDMMYY")}${Math.floor(
-        Math.random() * (999 - 100 + 1) + 100
-      )}`;
-      if (parseInt(current_amount) <= parseInt(request.body.amount)) {
-        return response.json("your balance is not enough.");
-      }
-      result = parseInt(current_amount) - parseInt(request.body.amount);
-      code = `TRO${moment(new Date()).format("DDMMYY")}${Math.floor(
-        Math.random() * (999 - 100 + 1) + 100
-      )}`;
-      recipient = request.body.recipient;
-      convert_result = config.formatRupiah(result.toString(), "-", "Rp");
-      convert_result_without_symbol = config.formatRupiah(
-        result.toString(),
-        "",
-        "Rp"
-      );
-      data = { amount: convert_result_without_symbol, code, recipient };
-      transfer_p2p_out(data);
-      code = `TRO${moment(new Date()).format("DDMMYY")}${Math.floor(
-        Math.random() * (999 - 100 + 1) + 100
-      )}`;
+
       redisClient.flushdb();
       misc.response(response, 200, false, "Success Transfer");
     } catch (error) {
